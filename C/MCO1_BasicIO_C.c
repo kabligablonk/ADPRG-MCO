@@ -1,6 +1,10 @@
-//
-// Created by Kabligablonk on 10/5/26.
-//
+/*
+*******************
+* Last names: Covar, Lising, Miranda, Tiotuyco
+* Language: C
+* Paradigm(s): Procedural programming
+*******************
+*/
 
 #include "../C/MCO1_BasicIO_C.h"
 
