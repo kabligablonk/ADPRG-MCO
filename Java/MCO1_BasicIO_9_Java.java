@@ -105,7 +105,7 @@ public class MCO1_BasicIO_9_Java {
         
         // Interface Requirement 6: Currency Exchange -----------------------------------------------------------------
         System.out.println("\nForeign Currency Exchange");
-        System.out.print("Source Amount (PHP): ");
+        System.out.print("Source Amount: ");
         sourceAmount = Double.parseDouble(sc.nextLine());
 
         System.out.println("\nExchanged Currency");
@@ -117,7 +117,7 @@ public class MCO1_BasicIO_9_Java {
         System.out.println("[6] Chinese Yuan Renminni (CNY) = " + df.format(sourceAmount * cnyRate));
 
         System.out.println("\n***");
-        System.out.println("Source Currency = Philippine Peso (PHP)");
+        System.out.println("Target Currency = Philippine Peso (PHP)");
         System.out.println("Source Amount (PHP) = " + df.format(sourceAmount));
 
         sc.close(); // close scanner - end of program.
