@@ -13,8 +13,8 @@ public class MCO1_BasicIO_9_Java {
     public static void main(String[] args){
 
         // Variable declarations
-        int mainMenuChoice;
-        String accountName, currency, curChoice;
+        int mainMenuChoice, curChoice;
+        String accountName, currency;
         double balance, depositAmount, withdrawAmount, sourceAmount,
                 exchRate, usdRate, jpyRate, gbpRate, eurRate, cnyRate;
 
@@ -94,13 +94,13 @@ public class MCO1_BasicIO_9_Java {
         System.out.println("[5] Euro (EUR)\n[6] Chinese Yuan Renminni (CNY)");
 
         System.out.print("\nSelect Foreign Currency: ");
-        curChoice = sc.nextLine();
+        curChoice = Integer.parseInt(sc.nextLine());
 
         System.out.print("Exchange Rate: ");
         exchRate = Double.parseDouble(sc.nextLine());
 
         System.out.println("\n***");
-        System.out.println("Select Foreign Currency = " + curChoice);
+        System.out.println("Select Foreign Currency = [" + curChoice + "]");
         System.out.println("Exchange Rate = " + df.format(exchRate));
         
         // Interface Requirement 6: Currency Exchange -----------------------------------------------------------------
