@@ -2,7 +2,7 @@
 *******************
 * Last names: Covar, Lising, Miranda, Tiotuyco
 * Language: Java
-* Paradigm(s): Imperative
+* Paradigm(s): Imperative programming
 *******************
 */
 
