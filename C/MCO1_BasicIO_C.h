@@ -1,6 +1,10 @@
-//
-// Created by Kabligablonk on 10/5/26.
-//
+/*
+*******************
+* Last names: Covar, Lising, Miranda, Tiotuyco
+* Language: C
+* Paradigm(s): Procedural programming
+*******************
+*/
 
 #ifndef ADPRG_MCO_VIEW_H
 #define ADPRG_MCO_VIEW_H
