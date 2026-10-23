@@ -1,14 +1,9 @@
 /*
-*******************
-* Last names: Covar, Lising, Miranda, Tiotuyco
-* Language: Java
-* Paradigm(s): Imperative programming, Object-Oriented Programming
-*******************
-*/
-
-/*
-    TO DO:
-    1. Clarify Record Exchange Rates segment
+ *******************
+ * Last names: Covar, Lising, Miranda, Tiotuyco
+ * Language: Java
+ * Paradigm(s): Imperative programming, Object-Oriented Programming
+ *******************
  */
 
 // Assumption is the money being stored is in PHP.
@@ -21,17 +16,15 @@ public class MCO1_9_Java {
 
         // Variable declarations
         int     mainMenuChoice, curChoice, numDays, sourceCurrency,
-                    exchangeCurrency, i, accIndex;
+                exchangeCurrency, i, accIndex;
 
         String  accountName, currency, returnToMenu, convertAnother;
 
         double  balance, eodBalance, depositAmount, withdrawAmount, sourceAmount,
-                    sourceAmountPHP, exchangeAmount, exchRate, usdRate, jpyRate, gbpRate,
-                        eurRate, cnyRate, dailyInterest;
+                sourceAmountPHP, exchangeAmount, newRate, dailyInterest;
 
         boolean running, runningChoice4, validChar, validCharEXC, validCurrency,
-                    validSourceCurrency, validExchangeCurrency, validNumDays, validAmount,
-                        validEXCAmount;
+                validSourceCurrency, validExchangeCurrency, validNumDays, validAmount;
 
         ArrayList<MCO1_9_Java_BankAccountClass> record = new ArrayList<>(); // For storing accounts
 
@@ -47,18 +40,13 @@ public class MCO1_9_Java {
         // Formally initialized, to be modified in program.
         depositAmount = 0;
         withdrawAmount = 0;
+        curChoice = 0; // Selected currency in menu choice 5
         sourceCurrency = 0;
         sourceAmount = 0;
         sourceAmountPHP = 0; // Source amount in PHP
         exchangeCurrency = 0;
         exchangeAmount = 0;
-
-        // Foreign exchange rates
-        usdRate = 62.00;
-        jpyRate = 0.40;
-        gbpRate = 84.00;
-        eurRate = 72.00;
-        cnyRate = 9.00;
+        newRate = 0; // New exchange rate in menu choice 5
 
         running = true;
 
@@ -99,10 +87,24 @@ public class MCO1_9_Java {
 
                 accountName = sc.nextLine();
 
-                record.add(new MCO1_9_Java_BankAccountClass(accountName));
+                for(i = 0; i < record.size(); i++){
+                    if(accountName.equals(record.get(i).getAccountName())){
+                        accIndex = i;
+                    }
+                }
+
+                if(accountName.trim().isEmpty()){
+                    System.out.println("Account name cannot be blank.");
+                }
+                else if(accIndex != -1){
+                    System.out.println("Account name is already registered.");
+                }
+                else{
+                    record.add(new MCO1_9_Java_BankAccountClass(accountName));
+                }
 
                 while(!validChar){ // Option to go back to main menu
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
@@ -164,7 +166,7 @@ public class MCO1_9_Java {
                 }
 
                 while(!validChar){
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
@@ -229,7 +231,7 @@ public class MCO1_9_Java {
                 }
 
                 while(!validChar){
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
@@ -252,7 +254,6 @@ public class MCO1_9_Java {
                 while(runningChoice4){
                     validCharEXC = false; // Reset variables for proper reuse
                     validAmount = false;
-                    validEXCAmount = false;
                     validSourceCurrency = false;
                     validExchangeCurrency = false;
 
@@ -346,7 +347,7 @@ public class MCO1_9_Java {
                     }
                 }
                 while(!validChar){
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
@@ -380,40 +381,7 @@ public class MCO1_9_Java {
                         curChoice = -1;
                     }
 
-                    if(curChoice == 1){
-                        exchRate = 1;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
-                        validCurrency = true;
-                    }
-                    else if(curChoice == 2){
-                        exchRate = usdRate;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
-                        validCurrency = true;
-                    }
-                    else if(curChoice == 3){
-                        exchRate = jpyRate;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
-                        validCurrency = true;
-                    }
-                    else if(curChoice == 4){
-                        exchRate = gbpRate;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
-                        validCurrency = true;
-                    }
-                    else if(curChoice == 5){
-                        exchRate = eurRate;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
-                        validCurrency = true;
-                    }
-                    else if(curChoice == 6){
-                        exchRate = cnyRate;
-                        System.out.println("Exchange Rate: " + df.format(exchRate));
-
+                    if(curChoice >= 1 && curChoice <= 6){
                         validCurrency = true;
                     }
                     else{
@@ -421,8 +389,38 @@ public class MCO1_9_Java {
                     }
                 }
 
+                if(curChoice == 1){
+                    // PHP is the base currency, so its rate always stays at 1.
+                    System.out.println("Exchange Rate: " + df.format(conv.getRate(curChoice)));
+                    System.out.println("PHP is the base currency, its exchange rate cannot be changed.");
+                }
+                else{
+                    System.out.println("Current Exchange Rate: " + df.format(conv.getRate(curChoice)));
+
+                    while(!validAmount){
+                        try{
+                            System.out.print("\nNew Exchange Rate: ");
+                            newRate = Double.parseDouble(sc.nextLine());
+
+                            if(newRate <= 0){
+                                System.out.println("Exchange rate must be greater than 0, please try again.");
+                            }
+                            else{
+                                validAmount = true;
+                            }
+                        }
+                        catch(NumberFormatException e){
+                            System.out.println("Invalid input, please try again.");
+                        }
+                    }
+
+                    conv.setRate(curChoice, newRate);
+
+                    System.out.println("Exchange Rate: " + df.format(conv.getRate(curChoice)));
+                }
+
                 while(!validChar){
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
@@ -493,7 +491,7 @@ public class MCO1_9_Java {
                 }
 
                 while(!validChar){
-                    System.out.print("\nBack to Main Menu (Y/N): ");
+                    System.out.print("\nBack to the Main Menu (Y/N): ");
                     returnToMenu = sc.nextLine();
 
                     if(returnToMenu.equalsIgnoreCase("y")){
