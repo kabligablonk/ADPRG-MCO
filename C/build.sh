@@ -1,0 +1,1 @@
+gcc main.c MCO1_9_model.c MCO1_9_view.c MCO1_9_viewmodel.c -o bank.exe
