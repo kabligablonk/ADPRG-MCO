@@ -7,17 +7,10 @@
 */
 
 #include "MCO1_9_model.h"
-#include <math.h>
 #include <string.h>
 
-static double exchange_rates[CURRENCY_COUNT] = {
-    1.00,   // PHP
-    62.00,  // USD
-    0.40,   // JPY
-    84.00,  // GBP
-    72.00,  // EUR
-    9.00    // CNY
-};
+/* Index order follows the Currency enum: PHP, USD, JPY, GBP, EUR, CNY */
+static double exchange_rates[CURRENCY_COUNT] = {1.00, 62.00, 0.40, 84.00, 72.00, 9.00};
 
 static const char *currency_codes[CURRENCY_COUNT] = {
     "PHP", "USD", "JPY", "GBP", "EUR", "CNY"
@@ -33,9 +26,11 @@ static const char *currency_names[CURRENCY_COUNT] = {
 };
 
 static int is_valid_currency(Currency currency) {
-    return currency >= PHP && currency < CURRENCY_COUNT;
+    if (currency < 0 || currency >= CURRENCY_COUNT) {
+        return 0;
+    }
+    return 1;
 }
-
 
 void init_account(Account *account) {
     account->account_name[0] = '\0';
@@ -43,78 +38,77 @@ void init_account(Account *account) {
     account->currency = PHP;
 }
 
-Result set_account_name(Account *account, const char *name) {
-    if (account == NULL || name == NULL || name[0] == '\0') {
-        return INVALID_ARGUMENT;
+int set_account_name(Account *account, const char *name) {
+    if (name[0] == '\0') {
+        return RESULT_INVALID;
     }
     if (strlen(name) >= ACCOUNT_NAME_SIZE) {
-        return NAME_TOO_LONG;
+        return RESULT_NAME_TOO_LONG;
     }
     strcpy(account->account_name, name);
-    return OK;
+    return RESULT_OK;
 }
 
 int is_account_registered(const Account *account) {
-    return account != NULL && account->account_name[0] != '\0';
+    if (account->account_name[0] == '\0') {
+        return 0;
+    }
+    return 1;
 }
 
-Result deposit_account(Account *account, double amount) {
-    if (account == NULL || amount <= 0) {
-        return INVALID_ARGUMENT;
+int deposit_account(Account *account, double amount) {
+    if (amount <= 0) {
+        return RESULT_INVALID;
     }
     account->balance += amount;
-    return OK;
+    return RESULT_OK;
 }
 
-Result withdraw_account(Account *account, double amount) {
-    if (account == NULL || amount <= 0) {
-        return INVALID_ARGUMENT;
+int withdraw_account(Account *account, double amount) {
+    if (amount <= 0) {
+        return RESULT_INVALID;
     }
     if (amount > account->balance) {
-        return INSUFFICIENT_FUNDS;
+        return RESULT_INSUFFICIENT_FUNDS;
     }
     account->balance -= amount;
-    return OK;
+    return RESULT_OK;
 }
 
-
-void init_exchange_rates(void) {
-    for (int i = 0; i < CURRENCY_COUNT; i++) {
-        exchange_rates[i] = 0.0;
-    }
-}
-
-Result set_exchange_rate(Currency currency, double rate) {
+int set_exchange_rate(Currency currency, double rate) {
     if (!is_valid_currency(currency) || currency == PHP || rate <= 0) {
-        return INVALID_ARGUMENT;
+        return RESULT_INVALID;
     }
     exchange_rates[currency] = rate;
-    return OK;
+    return RESULT_OK;
 }
 
-double get_exchange_rate(Currency currency) {
-    return is_valid_currency(currency) ? exchange_rates[currency] : 0.0;
-}
-
-Result convert_currency(Currency from, Currency to, double amount, double *converted) {
-    if (!is_valid_currency(from) || !is_valid_currency(to) ||
-        amount < 0 || converted == NULL) {
-        return INVALID_ARGUMENT;
+int convert_currency(Currency from, Currency to, double amount, double *converted) {
+    if (!is_valid_currency(from) || !is_valid_currency(to) || amount < 0) {
+        return RESULT_INVALID;
     }
-    /* Everything is routed through the PHP base currency. */
     *converted = amount * exchange_rates[from] / exchange_rates[to];
-    return OK;
+    return RESULT_OK;
 }
+
 
 double compute_daily_interest(double balance) {
-    double interest = balance * (ANNUAL_INTEREST_RATE / 365.0);
-    return floor(interest * 100.0 + 0.5) / 100.0;   /* credited in whole centavos */
+    double interest = balance * (ANNUAL_INTEREST_RATE / 365);
+    long centavos = (long)(interest * 100 + 0.5);   /* round to 2 decimal places */
+    return centavos / 100.0;
 }
 
+
 const char *get_currency_code(Currency currency) {
-    return is_valid_currency(currency) ? currency_codes[currency] : "???";
+    if (!is_valid_currency(currency)) {
+        return "???";
+    }
+    return currency_codes[currency];
 }
 
 const char *get_currency_name(Currency currency) {
-    return is_valid_currency(currency) ? currency_names[currency] : "Unknown";
+    if (!is_valid_currency(currency)) {
+        return "Unknown";
+    }
+    return currency_names[currency];
 }

@@ -15,9 +15,8 @@
 int take_int_input(const char *prompt);
 int take_choice_input(const char *prompt, int min, int max);
 double take_double_input(const char *prompt);
-void take_string_input(char *buffer, int buffer_size, const char *prompt);
+void take_string_input(char *buffer, const char *prompt);
 bool take_yes_no_input(const char *prompt);
-void read_line(char *buffer, int buffer_size);
 void view_main_menu_navigation(void);
 void view_account_registration(Account *account);
 void view_deposit_amount(Account *account);

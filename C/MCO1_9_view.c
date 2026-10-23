@@ -8,192 +8,175 @@
 
 #include "MCO1_9_view.h"
 #include "MCO1_9_viewmodel.h"
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define INPUT_BUFFER_SIZE 100
+#define NAME_INPUT_SIZE 100
 
-
-void read_line(char *buffer, int buffer_size) {
-    if (fgets(buffer, buffer_size, stdin) == NULL) {
-        printf("\n");
-        exit(0);
-    }
-
-    size_t length = strlen(buffer);
-    if (length > 0 && buffer[length - 1] == '\n') {
-        buffer[length - 1] = '\0';
-    } else {
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF) { }
+static void clear_input_buffer(void) {
+    int c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }
 
 int take_int_input(const char *prompt) {
-    char line[INPUT_BUFFER_SIZE];
-    char *end;
+    int value = 0;
+    int status;
 
-    while (true) {
-        printf("%s", prompt);
-        read_line(line, sizeof(line));
-
-        errno = 0;
-        long value = strtol(line, &end, 10);
-        while (isspace((unsigned char)*end)) end++;
-
-        if (end != line && *end == '\0' && errno == 0 &&
-            value >= INT_MIN && value <= INT_MAX) {
-            return (int)value;
+    printf("%s", prompt);
+    status = scanf("%d", &value);
+    while (status != 1) {
+        if (status == EOF) {
+            exit(0);
         }
+        clear_input_buffer();
         printf("Invalid input. Please enter a whole number.\n");
+        printf("%s", prompt);
+        status = scanf("%d", &value);
     }
+    clear_input_buffer();
+    return value;
 }
 
 int take_choice_input(const char *prompt, int min, int max) {
-    while (true) {
-        int choice = take_int_input(prompt);
-        if (choice >= min && choice <= max) {
-            return choice;
-        }
+    int choice = take_int_input(prompt);
+
+    while (choice < min || choice > max) {
         printf("Invalid choice. Please select a number from %d to %d.\n", min, max);
+        choice = take_int_input(prompt);
     }
+    return choice;
 }
 
 double take_double_input(const char *prompt) {
-    char line[INPUT_BUFFER_SIZE];
-    char *end;
+    double value = 0.0;
+    int status;
 
-    while (true) {
-        printf("%s", prompt);
-        read_line(line, sizeof(line));
-
-        errno = 0;
-        double value = strtod(line, &end);
-        while (isspace((unsigned char)*end)) end++;
-
-        if (end != line && *end == '\0' && errno == 0 && isfinite(value)) {
-            return value;
+    printf("%s", prompt);
+    status = scanf("%lf", &value);
+    while (status != 1) {
+        if (status == EOF) {
+            exit(0);
         }
+        clear_input_buffer();
         printf("Invalid input. Please enter a number.\n");
+        printf("%s", prompt);
+        status = scanf("%lf", &value);
     }
+    clear_input_buffer();
+    return value;
 }
 
-void take_string_input(char *buffer, int buffer_size, const char *prompt) {
-    while (true) {
-        printf("%s", prompt);
-        read_line(buffer, buffer_size);
-        if (buffer[0] != '\0') {
-            return;
-        }
-        printf("Input cannot be empty.\n");
+void take_string_input(char *buffer, const char *prompt) {
+    printf("%s", prompt);
+    if (scanf(" %99[^\n]", buffer) != 1) {
+        exit(0);
     }
+    clear_input_buffer();
 }
 
 bool take_yes_no_input(const char *prompt) {
-    char line[INPUT_BUFFER_SIZE];
+    char choice = ' ';
 
-    while (true) {
-        printf("%s", prompt);
-        read_line(line, sizeof(line));
-        if (line[0] != '\0' && line[1] == '\0') {
-            if (line[0] == 'Y' || line[0] == 'y') return true;
-            if (line[0] == 'N' || line[0] == 'n') return false;
-        }
+    printf("%s", prompt);
+    if (scanf(" %c", &choice) != 1) {
+        exit(0);
+    }
+    clear_input_buffer();
+
+    while (choice != 'Y' && choice != 'y' && choice != 'N' && choice != 'n') {
         printf("Please enter Y or N.\n");
+        printf("%s", prompt);
+        if (scanf(" %c", &choice) != 1) {
+            exit(0);
+        }
+        clear_input_buffer();
     }
+    return choice == 'Y' || choice == 'y';
 }
 
-static const char *get_result_message(Result result) {
-    switch (result) {
-        case OK:
-            return "Success.";
-        case INVALID_ARGUMENT:
-            return "Invalid value. Amount/rate must be greater than zero.";
-        case NAME_TOO_LONG:
-            return "Account name cannot exceed 31 characters.";
-        case NO_ACCOUNT:
-            return "No account registered. Please register an account name first.";
-        case INSUFFICIENT_FUNDS:
-            return "Insufficient balance.";
-    }
-    return "Unknown error.";
-}
 
-static void print_error(Result result) {
-    printf("Error: %s\n", get_result_message(result));
+static void print_error(int result) {
+    printf("Error: ");
+    if (result == RESULT_INVALID) {
+        printf("Invalid value. It must be greater than zero.\n");
+    } else if (result == RESULT_NAME_TOO_LONG) {
+        printf("Account name cannot exceed 31 characters.\n");
+    } else if (result == RESULT_NO_ACCOUNT) {
+        printf("No account registered. Please register an account name first.\n");
+    } else if (result == RESULT_INSUFFICIENT_FUNDS) {
+        printf("Insufficient balance.\n");
+    } else {
+        printf("Something went wrong.\n");
+    }
 }
 
 static void print_currency_options(void) {
-    for (int i = PHP; i < CURRENCY_COUNT; i++) {
-        printf("[%d] %s (%s)\n", i + 1, get_currency_name((Currency)i), get_currency_code((Currency)i));
+    int i;
+
+    for (i = 0; i < CURRENCY_COUNT; i++) {
+        printf("[%d] %s (%s)\n", i + 1, get_currency_name(i), get_currency_code(i));
     }
 }
 
-static void print_account_header(const Account *account) {
+static void print_account_details(const Account *account) {
     printf("Account Name: %s\n", account->account_name);
     printf("Current Balance: %.2f\n", account->balance);
     printf("Currency: %s\n\n", get_currency_code(account->currency));
 }
 
-
-static void run_transaction(void (*screen)(Account *), Account *account) {
-    do {
-        screen(account);
-        printf("\n");
-    } while (!take_yes_no_input("Back to the Main Menu (Y/N): "));
+static void ask_back_to_main_menu(void) {
     printf("\n");
-}
-
-static void run_transaction_without_account(void (*screen)(void)) {
-    do {
-        screen();
+    if (take_yes_no_input("Back to the Main Menu (Y/N): ")) {
         printf("\n");
-    } while (!take_yes_no_input("Back to the Main Menu (Y/N): "));
-    printf("\n");
-}
-
-static void print_main_menu(void) {
-    printf("Select Transaction:\n");
-    printf("[1] Register Account Name\n");
-    printf("[2] Deposit Amount\n");
-    printf("[3] Withdraw Amount\n");
-    printf("[4] Currency Exchange\n");
-    printf("[5] Record Exchange Rates\n");
-    printf("[6] Show Interest Amount\n");
-    printf("[7] Exit\n\n");
+    } else {
+        ask_back_to_main_menu();
+    }
 }
 
 void view_main_menu_navigation(void) {
     Account account;
+    int choice;
+
     viewmodel_init(&account);
 
     while (true) {
-        print_main_menu();
+        printf("Select Transaction:\n");
+        printf("[1] Register Account Name\n");
+        printf("[2] Deposit Amount\n");
+        printf("[3] Withdraw Amount\n");
+        printf("[4] Currency Exchange\n");
+        printf("[5] Record Exchange Rates\n");
+        printf("[6] Show Interest Amount\n");
+        printf("[7] Exit\n\n");
 
-        switch (take_int_input("Choice: ")) {
+        choice = take_int_input("Choice: ");
+
+        switch (choice) {
             case 1:
-                run_transaction(view_account_registration, &account);
+                view_account_registration(&account);
+                ask_back_to_main_menu();
                 break;
             case 2:
-                run_transaction(view_deposit_amount, &account);
+                view_deposit_amount(&account);
+                ask_back_to_main_menu();
                 break;
             case 3:
-                run_transaction(view_withdraw_amount, &account);
+                view_withdraw_amount(&account);
+                ask_back_to_main_menu();
                 break;
             case 4:
                 view_foreign_currency_exchange();
                 printf("\n");
                 break;
             case 5:
-                run_transaction_without_account(view_record_exchange_rate);
+                view_record_exchange_rate();
+                ask_back_to_main_menu();
                 break;
             case 6:
-                run_transaction(view_show_interest_amount, &account);
+                view_show_interest_amount(&account);
+                ask_back_to_main_menu();
                 break;
             case 7:
                 return;
@@ -204,30 +187,32 @@ void view_main_menu_navigation(void) {
 }
 
 void view_account_registration(Account *account) {
-    char account_name[INPUT_BUFFER_SIZE];
+    char account_name[NAME_INPUT_SIZE];
+    int result;
 
     printf("\nRegister Account Name\n");
-    take_string_input(account_name, sizeof(account_name), "Account Name: ");
+    take_string_input(account_name, "Account Name: ");
 
-    Result result = viewmodel_register_account(account, account_name);
-    if (result != OK) {
+    result = viewmodel_register_account(account, account_name);
+    if (result != RESULT_OK) {
         print_error(result);
     }
 }
 
 void view_deposit_amount(Account *account) {
-    printf("\nDeposit Amount\n");
+    double amount;
+    int result;
 
+    printf("\nDeposit Amount\n");
     if (!is_account_registered(account)) {
-        print_error(NO_ACCOUNT);
+        print_error(RESULT_NO_ACCOUNT);
         return;
     }
-    print_account_header(account);
+    print_account_details(account);
 
-    double amount = take_double_input("Deposit Amount: ");
-    Result result = viewmodel_deposit(account, amount);
-
-    if (result == OK) {
+    amount = take_double_input("Deposit Amount: ");
+    result = viewmodel_deposit(account, amount);
+    if (result == RESULT_OK) {
         printf("Updated Balance: %.2f\n", account->balance);
     } else {
         print_error(result);
@@ -235,18 +220,19 @@ void view_deposit_amount(Account *account) {
 }
 
 void view_withdraw_amount(Account *account) {
-    printf("\nWithdraw Amount\n");
+    double amount;
+    int result;
 
+    printf("\nWithdraw Amount\n");
     if (!is_account_registered(account)) {
-        print_error(NO_ACCOUNT);
+        print_error(RESULT_NO_ACCOUNT);
         return;
     }
-    print_account_header(account);
+    print_account_details(account);
 
-    double amount = take_double_input("Withdraw Amount: ");
-    Result result = viewmodel_withdraw(account, amount);
-
-    if (result == OK) {
+    amount = take_double_input("Withdraw Amount: ");
+    result = viewmodel_withdraw(account, amount);
+    if (result == RESULT_OK) {
         printf("Updated Balance: %.2f\n", account->balance);
     } else {
         print_error(result);
@@ -254,45 +240,55 @@ void view_withdraw_amount(Account *account) {
 }
 
 void view_foreign_currency_exchange(void) {
-    do {
+    int source;
+    int target;
+    double source_amount;
+    double converted;
+    int result;
+    bool again = true;
+
+    while (again) {
         printf("\nForeign Currency Exchange\n");
         printf("Source Currency Option:\n");
         print_currency_options();
 
-        Currency source = (Currency)(take_choice_input("\nSource Currency: ", 1, CURRENCY_COUNT) - 1);
-        double source_amount = take_double_input("Source Amount: ");
+        source = take_choice_input("\nSource Currency: ", 1, CURRENCY_COUNT) - 1;
+        source_amount = take_double_input("Source Amount: ");
 
         printf("\nExchanged Currency Options:\n");
         print_currency_options();
 
-        Currency target = (Currency)(take_choice_input("\nExchange Currency: ", 1, CURRENCY_COUNT) - 1);
+        target = take_choice_input("\nExchange Currency: ", 1, CURRENCY_COUNT) - 1;
 
-        double converted = 0.0;
-        Result result = viewmodel_convert_currency(source, target, source_amount, &converted);
-        if (result == OK) {
+        result = viewmodel_convert_currency(source, target, source_amount, &converted);
+        if (result == RESULT_OK) {
             printf("Exchange Amount: %.2f\n", converted);
         } else {
             print_error(result);
         }
+
         printf("\n");
-    } while (take_yes_no_input("Convert another currency (Y/N)? "));
+        again = take_yes_no_input("Convert another currency (Y/N)? ");
+    }
 }
 
 void view_record_exchange_rate(void) {
+    int currency;
+    double rate;
+    int result;
+
     printf("\nRecord Exchange Rate\n\n");
     print_currency_options();
 
-    Currency currency = (Currency)(take_choice_input("\nSelect Foreign Currency: ", 1, CURRENCY_COUNT) - 1);
-
+    currency = take_choice_input("\nSelect Foreign Currency: ", 1, CURRENCY_COUNT) - 1;
     if (currency == PHP) {
-        printf("PHP is the base currency; its exchange rate is fixed at 1.00.\n");
+        printf("PHP is the base currency. Its exchange rate is fixed at 1.00.\n");
         return;
     }
 
-    double rate = take_double_input("Exchange Rate: ");
-    Result result = viewmodel_record_exchange_rate(currency, rate);
-
-    if (result == OK) {
+    rate = take_double_input("Exchange Rate: ");
+    result = viewmodel_record_exchange_rate(currency, rate);
+    if (result == RESULT_OK) {
         printf("Recorded: 1 %s = %.2f PHP\n", get_currency_code(currency), rate);
     } else {
         print_error(result);
@@ -300,25 +296,29 @@ void view_record_exchange_rate(void) {
 }
 
 void view_show_interest_amount(Account *account) {
-    printf("\nShow Interest Amount\n");
+    int days;
+    int day;
+    double interest;
+    double balance;
 
+    printf("\nShow Interest Amount\n");
     if (!is_account_registered(account)) {
-        print_error(NO_ACCOUNT);
+        print_error(RESULT_NO_ACCOUNT);
         return;
     }
-    print_account_header(account);
+    print_account_details(account);
     printf("Interest Rate: %.0f%%\n\n", ANNUAL_INTEREST_RATE * 100);
 
-    int days = take_int_input("Total Number of Days: ");
+    days = take_int_input("Total Number of Days: ");
     if (days <= 0) {
-        printf("Error: Number of days must be greater than zero.\n");
+        print_error(RESULT_INVALID);
         return;
     }
 
     printf("\nDay | Interest | Balance |\n");
-    double balance = account->balance;
-    for (int day = 1; day <= days; day++) {
-        double interest = viewmodel_daily_interest(balance);
+    balance = account->balance;
+    for (day = 1; day <= days; day++) {
+        interest = viewmodel_daily_interest(balance);
         balance += interest;
         printf("%-3d | %-8.2f | %-7.2f |\n", day, interest, balance);
     }

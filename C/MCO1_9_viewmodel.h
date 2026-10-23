@@ -11,12 +11,12 @@
 
 #include "MCO1_9_model.h"
 
-void   viewmodel_init(Account *account);
-Result viewmodel_register_account(Account *account, const char *name);
-Result viewmodel_deposit(Account *account, double amount);
-Result viewmodel_withdraw(Account *account, double amount);
-Result viewmodel_record_exchange_rate(Currency currency, double rate);
-Result viewmodel_convert_currency(Currency from, Currency to, double amount, double *converted);
+void viewmodel_init(Account *account);
+int viewmodel_register_account(Account *account, const char *name);
+int viewmodel_deposit(Account *account, double amount);
+int viewmodel_withdraw(Account *account, double amount);
+int viewmodel_record_exchange_rate(Currency currency, double rate);
+int viewmodel_convert_currency(Currency from, Currency to, double amount, double *converted);
 double viewmodel_daily_interest(double balance);
 
 #endif // ADPRG_MCO_MCO1_9_VIEWMODEL_H
