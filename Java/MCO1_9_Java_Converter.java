@@ -11,46 +11,32 @@
 
 public class MCO1_9_Java_Converter {
 
+    // Constructors
+    public MCO1_9_Java_Converter(){
+
+        // Default exchange rates:
+        // Index order follows the menu: 0 = PHP, 1 = USD, 2 = JPY, 3 = GBP, 4 = EUR, 5 = CNY
+        rates = new double[]{1.00, 62.00, 0.40, 84.00, 72.00, 9.00};
+    }
+
     // Methods
+    public double getRate(int currency){ // currency is the menu choice (1-6)
+        return rates[currency - 1];
+    }
+
+    public void setRate(int currency, double rate){
+        rates[currency - 1] = rate;
+    }
+
     public double convertToPHP(int sourceCurrency, double sourceAmount){
-        if(sourceCurrency == 2){ // USD
-            return sourceAmount * 62.00;
-        }
-        else if(sourceCurrency == 3){ // JPY
-            return sourceAmount * 0.40;
-        }
-        else if(sourceCurrency == 4){ // GBP
-            return sourceAmount * 84.00;
-        }
-        else if(sourceCurrency == 5){ // EUR
-            return sourceAmount * 72.00;
-        }
-        else if(sourceCurrency == 6){ // CNY
-            return sourceAmount * 9.00;
-        }
-        else{ // PHP
-            return sourceAmount;
-        }
+        return sourceAmount * rates[sourceCurrency - 1];
     }
 
     public double convertFromPHP(int exchangeCurrency, double sourceAmountPHP){
-        if(exchangeCurrency == 2){ // USD
-            return sourceAmountPHP / 62.00;
-        }
-        else if(exchangeCurrency == 3){ // JPY
-            return sourceAmountPHP / 0.40;
-        }
-        else if(exchangeCurrency == 4){ // GBP
-            return sourceAmountPHP / 84.00;
-        }
-        else if(exchangeCurrency == 5){ // EUR
-            return sourceAmountPHP / 72.00;
-        }
-        else if(exchangeCurrency == 6){ // CNY
-            return sourceAmountPHP / 9.00;
-        }
-        else{ // PHP
-            return sourceAmountPHP;
-        }
+        return sourceAmountPHP / rates[exchangeCurrency - 1];
     }
+
+    // Converter Attributes
+    private double[] rates;
+
 }
