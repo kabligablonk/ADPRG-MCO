@@ -7,9 +7,9 @@
 */
 
 #include <stdio.h>
-#include "MCO1_9_view.h"
+#include "MCO2_9_view.h"
 
 int main(void) {
-    view_main_menu_navigation();
+    run_main_menu();
     return 0;
 }
